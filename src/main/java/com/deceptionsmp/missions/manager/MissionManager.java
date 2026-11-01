@@ -53,10 +53,8 @@ public class MissionManager {
 
         Mission mission = new Mission(
                 chosen.id(),
-                player.getUniqueId(),
-                chosen.type(),
                 MissionDifficulty.valueOf(chosen.difficulty().name()),
-                chosen.description(),
+                chosen.type().name(),
                 chosen.targetMaterial().name(),
                 chosen.requiredAmount(),
                 deadline
