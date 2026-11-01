@@ -1,0 +1,11 @@
+# Deception SMP Mission System Configuration
+
+ranks:
+  ROOKIE: 0
+  AGENT: 100
+  OPERATIVE: 300
+  CLASSIFIED: 600
+
+anti-farming:
+  same-player-kill-cooldown-minutes: 60
+  prevent-placed-block-break-objectives: true
