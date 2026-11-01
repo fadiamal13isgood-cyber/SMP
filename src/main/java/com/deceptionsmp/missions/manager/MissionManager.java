@@ -49,13 +49,13 @@ public class MissionManager {
         if (filteredPool.isEmpty()) filteredPool = availablePool;
 
         MissionPoolData.MissionTemplate chosen = filteredPool.get(random.nextInt(filteredPool.size()));
-        long deadline = System.currentTimeMillis() + (chosen.difficulty() == MissionDifficulty.EASY ? 1800000L : 3600000L);
+        long deadline = System.currentTimeMillis() + (chosen.difficulty() == MissionPoolData.MissionDifficulty.EASY ? 1800000L : 3600000L);
 
         Mission mission = new Mission(
                 chosen.id(),
                 player.getUniqueId(),
-                chosen.type(),
-                chosen.difficulty(),
+                com.deceptionsmp.missions.model.MissionType.valueOf(chosen.type().name()),
+                MissionDifficulty.valueOf(chosen.difficulty().name()),
                 chosen.description(),
                 chosen.targetMaterial(),
                 chosen.requiredAmount(),
@@ -98,6 +98,24 @@ public class MissionManager {
                 }
             }
         }.runTaskTimer(plugin, 0L, 1L);
+    }
+
+    public void checkProgress(Player player, String missionTypeStr, int amount, String target) {
+        Mission mission = activeMissions.get(player.getUniqueId());
+        if (mission == null) return;
+
+        boolean typeMatch = mission.getType().name().equalsIgnoreCase(missionTypeStr);
+        boolean targetMatch = target == null || target.isEmpty() || 
+                (mission.getTargetMaterial() != null && mission.getTargetMaterial().name().equalsIgnoreCase(target));
+
+        if (typeMatch && targetMatch) {
+            mission.addProgress(amount);
+            if (mission.getProgress() >= mission.getRequiredAmount()) {
+                completeMission(player, mission);
+            } else {
+                player.sendActionBar(Component.text("Mission Progress: " + mission.getProgress() + " / " + mission.getRequiredAmount(), NamedTextColor.YELLOW));
+            }
+        }
     }
 
     public void completeMission(Player player, Mission mission) {
@@ -173,14 +191,12 @@ public class MissionManager {
         }
 
         if (difficulty == MissionDifficulty.EASY) {
-            // Easy: Speed I (2 mins), Night Vision (2 mins), and Haste I (1 min)
             player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 2400, 0, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 2400, 0, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 1200, 0, true, true));
             player.sendMessage(Component.text(" • Speed I (2:00), Night Vision (2:00) & Haste I (1:00)", NamedTextColor.AQUA));
 
         } else if (difficulty == MissionDifficulty.MEDIUM) {
-            // Medium: Haste II (3 mins), Regeneration I (30s), Water Breathing (2 mins), and Dolphin's Grace (1 min)
             player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 3600, 1, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 600, 0, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 2400, 0, true, true));
@@ -188,7 +204,6 @@ public class MissionManager {
             player.sendMessage(Component.text(" • Haste II (3:00), Regen I (0:30), Water Breathing & Dolphin's Grace", NamedTextColor.AQUA));
 
         } else {
-            // Hard: Strength II (3 mins), Resistance II (2 mins), Health Boost (3 mins), and Fire Resistance (2 mins)
             player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 3600, 1, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 2400, 1, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 3600, 1, true, true));
