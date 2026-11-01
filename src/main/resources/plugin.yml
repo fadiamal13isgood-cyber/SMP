@@ -1,0 +1,30 @@
+name: DeceptionMissions
+version: 1.0.0
+main: com.deceptionsmp.missions.DeceptionMissions
+api-version: '26.2'
+author: DeceptionSMP
+description: Custom secret mission system for Deception SMP
+
+commands:
+  mission:
+    description: View your active secret mission details.
+    permission: deceptionmissions.user
+    usage: /mission
+  intel:
+    description: Check your Intel balance.
+    permission: deceptionmissions.user
+    usage: /intel
+  credits:
+    description: Check your Credits balance.
+    permission: deceptionmissions.user
+    usage: /credits
+  tokens:
+    description: Check your Classified Tokens balance.
+    permission: deceptionmissions.user
+    usage: /tokens
+
+permissions:
+  deceptionmissions.user:
+    default: true
+  deceptionmissions.admin:
+    default: op
