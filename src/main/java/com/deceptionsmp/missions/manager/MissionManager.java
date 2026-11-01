@@ -105,11 +105,11 @@ public class MissionManager {
         if (mission == null) return;
 
         boolean typeMatch = mission.getType().name().equalsIgnoreCase(missionTypeStr);
-        boolean targetMatch = target == null || target.isEmpty() || 
-                (mission.getTargetMaterial() != null && mission.getTargetMaterial().name().equalsIgnoreCase(target));
+        String missionTargetStr = mission.getTargetMaterial() != null ? mission.getTargetMaterial().name() : "";
+        boolean targetMatch = target == null || target.isEmpty() || missionTargetStr.equalsIgnoreCase(target);
 
         if (typeMatch && targetMatch) {
-            mission.addProgress(amount);
+            mission.setProgress(mission.getProgress() + amount);
             if (mission.getProgress() >= mission.getRequiredAmount()) {
                 completeMission(player, mission);
             } else {
