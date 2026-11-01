@@ -57,7 +57,7 @@ public class MissionManager {
                 com.deceptionsmp.missions.model.MissionType.valueOf(chosen.type().name()),
                 MissionDifficulty.valueOf(chosen.difficulty().name()),
                 chosen.description(),
-                chosen.targetMaterial(),
+                chosen.targetMaterial().name(),
                 chosen.requiredAmount(),
                 deadline
         );
@@ -105,7 +105,7 @@ public class MissionManager {
         if (mission == null) return;
 
         boolean typeMatch = mission.getType().name().equalsIgnoreCase(missionTypeStr);
-        String missionTargetStr = mission.getTargetMaterial() != null ? mission.getTargetMaterial().name() : "";
+        String missionTargetStr = mission.getTargetMaterial() != null ? mission.getTargetMaterial() : "";
         boolean targetMatch = target == null || target.isEmpty() || missionTargetStr.equalsIgnoreCase(target);
 
         if (typeMatch && targetMatch) {
