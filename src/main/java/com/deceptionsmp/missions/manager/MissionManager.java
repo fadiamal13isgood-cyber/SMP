@@ -174,7 +174,6 @@ public class MissionManager {
             }
         }.runTaskTimer(plugin, 200L, 200L);
     }
-
     private List<MissionTemplate> getExpandedMissionPool() {
         List<MissionTemplate> pool = new ArrayList<>();
 
@@ -268,8 +267,7 @@ public class MissionManager {
         pool.add(new MissionTemplate("c_beacon", MissionType.CRAFT, MissionDifficulty.HARD, "Craft 1 Beacon", Material.BEACON, 1));
         pool.add(new MissionTemplate("c_spectral_arrow", MissionType.CRAFT, MissionDifficulty.HARD, "Craft 32 Spectral Arrows", Material.SPECTRAL_ARROW, 32));
         pool.add(new MissionTemplate("c_firework_rocket", MissionType.CRAFT, MissionDifficulty.HARD, "Craft 64 Firework Rockets", Material.FIREWORK_ROCKET, 64));
-        pool.add(new MissionTemplate("c_shulker_box", MissionType.CRAFT, MissionDifficulty.HARD, "
-Craft 1 Shulker Box", Material.SHULKER_BOX, 1));
+        pool.add(new MissionTemplate("c_shulker_box", MissionType.CRAFT, MissionDifficulty.HARD, "Craft 1 Shulker Box", Material.SHULKER_BOX, 1));
 
         // EASY HUNTING (10)
         pool.add(new MissionTemplate("h_zombies", MissionType.HUNT, MissionDifficulty.EASY, "Eliminate 15 Zombies", Material.ROTTEN_FLESH, 15));
