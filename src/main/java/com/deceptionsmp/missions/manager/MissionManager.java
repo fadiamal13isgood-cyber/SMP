@@ -118,6 +118,15 @@ public class MissionManager {
         }
     }
 
+    public void failMission(UUID playerUuid, Mission mission) {
+        activeMissions.remove(playerUuid);
+        Player player = Bukkit.getPlayer(playerUuid);
+        if (player != null && player.isOnline()) {
+            player.sendMessage(Component.text("[MISSION FAILED] Time ran out or session expired.", NamedTextColor.RED));
+            assignRandomMission(player);
+        }
+    }
+
     public void completeMission(Player player, Mission mission) {
         activeMissions.remove(player.getUniqueId());
         lastCompletedMissionId.put(player.getUniqueId(), mission.getId());
@@ -135,7 +144,6 @@ public class MissionManager {
     }
 
     private void rewardPlayer(Player player, MissionDifficulty difficulty) {
-        // 0.5% Jackpot Heart Reward
         if (random.nextDouble() * 100.0 <= 0.5) {
             AttributeInstance maxHealthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
             if (maxHealthAttr != null) {
@@ -152,7 +160,6 @@ public class MissionManager {
             }
         }
 
-        // Item Rewards based on Difficulty
         List<ItemStack> rewards = new ArrayList<>();
         if (difficulty == MissionDifficulty.EASY) {
             rewards.add(new ItemStack(org.bukkit.Material.IRON_INGOT, 8 + random.nextInt(9)));
@@ -174,18 +181,16 @@ public class MissionManager {
             player.sendMessage(Component.text(" • " + item.getAmount() + "x " + item.getType().name().replace("_", " "), NamedTextColor.AQUA));
         }
 
-        // Expanded Status Effect Rewards
         applyQuestBuffs(player, difficulty);
     }
 
     private void applyQuestBuffs(Player player, MissionDifficulty difficulty) {
         player.sendMessage(Component.text("BUFFS ACQUIRED:", NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD));
 
-        // 5% Chance for a Rare God-Tier Buff Drop on any completed quest
         if (random.nextDouble() * 100.0 <= 5.0) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 6000, 3, true, true));     // Absorption IV (5 mins)
-            player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 6000, 0, true, true)); // Fire Resistance (5 mins)
-            player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 3600, 1, true, true));      // Jump Boost II (3 mins)
+            player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 6000, 3, true, true));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 6000, 0, true, true));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 3600, 1, true, true));
             player.sendMessage(Component.text(" • ⚡ GOD-TIER BUFF OVERLOAD! Absorption IV, Fire Res & Jump Boost II (5:00)", NamedTextColor.GOLD));
             return;
         }
@@ -220,12 +225,7 @@ public class MissionManager {
                 for (UUID uuid : new HashSet<>(activeMissions.keySet())) {
                     Mission m = activeMissions.get(uuid);
                     if (m != null && now >= m.getDeadlineTimestamp()) {
-                        Player player = Bukkit.getPlayer(uuid);
-                        activeMissions.remove(uuid);
-                        if (player != null && player.isOnline()) {
-                            player.sendMessage(Component.text("[MISSION EXPIRED] You failed to complete your mission in time!", NamedTextColor.RED));
-                            assignRandomMission(player);
-                        }
+                        failMission(uuid, m);
                     }
                 }
             }
