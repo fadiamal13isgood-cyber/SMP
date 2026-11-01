@@ -7,5 +7,4 @@ ranks:
   CLASSIFIED: 600
 
 anti-farming:
-  same-player-kill-cooldown-minutes: 60
-  prevent-placed-block-break-objectives: true
+  same-player-kill-cooldown-minutes: 5
