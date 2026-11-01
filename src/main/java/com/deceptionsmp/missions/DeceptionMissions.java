@@ -1,7 +1,10 @@
 package com.deceptionsmp.missions;
 
+import com.deceptionsmp.missions.command.BountyCommand;
+import com.deceptionsmp.missions.listener.BountyListener;
 import com.deceptionsmp.missions.listener.MissionListener;
 import com.deceptionsmp.missions.listener.PlayerJoinListener;
+import com.deceptionsmp.missions.manager.BountyManager;
 import com.deceptionsmp.missions.manager.MissionManager;
 import com.deceptionsmp.missions.manager.RewardManager;
 import com.deceptionsmp.missions.manager.StorageManager;
@@ -20,6 +23,7 @@ public class DeceptionMissions extends JavaPlugin implements CommandExecutor {
     private StorageManager storageManager;
     private MissionManager missionManager;
     private RewardManager rewardManager;
+    private BountyManager bountyManager;
 
     @Override
     public void onEnable() {
@@ -29,11 +33,14 @@ public class DeceptionMissions extends JavaPlugin implements CommandExecutor {
         this.storageManager = new StorageManager(this);
         this.rewardManager = new RewardManager(this);
         this.missionManager = new MissionManager(this);
+        this.bountyManager = new BountyManager(this);
 
         getServer().getPluginManager().registerEvents(new MissionListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+        getServer().getPluginManager().registerEvents(new BountyListener(this), this);
 
         if (getCommand("mission") != null) getCommand("mission").setExecutor(this);
+        if (getCommand("bounty") != null) getCommand("bounty").setExecutor(new BountyCommand(this));
 
         missionManager.startDeadlineChecker();
     }
@@ -42,6 +49,9 @@ public class DeceptionMissions extends JavaPlugin implements CommandExecutor {
     public void onDisable() {
         if (storageManager != null) {
             storageManager.saveAllData();
+        }
+        if (bountyManager != null) {
+            bountyManager.saveBounties();
         }
     }
 
@@ -76,4 +86,5 @@ public class DeceptionMissions extends JavaPlugin implements CommandExecutor {
     public StorageManager getStorageManager() { return storageManager; }
     public MissionManager getMissionManager() { return missionManager; }
     public RewardManager getRewardManager() { return rewardManager; }
+    public BountyManager getBountyManager() { return bountyManager; }
 }
