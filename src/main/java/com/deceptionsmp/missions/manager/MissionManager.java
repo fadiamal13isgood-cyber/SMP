@@ -269,3 +269,46 @@ public class MissionManager {
         pool.add(new MissionTemplate("c_spectral_arrow", MissionType.CRAFT, MissionDifficulty.HARD, "Craft 32 Spectral Arrows", Material.SPECTRAL_ARROW, 32));
         pool.add(new MissionTemplate("c_firework_rocket", MissionType.CRAFT, MissionDifficulty.HARD, "Craft 64 Firework Rockets", Material.FIREWORK_ROCKET, 64));
         pool.add(new MissionTemplate("c_shulker_box", MissionType.CRAFT, MissionDifficulty.HARD, "
+Craft 1 Shulker Box", Material.SHULKER_BOX, 1));
+
+        // EASY HUNTING (10)
+        pool.add(new MissionTemplate("h_zombies", MissionType.HUNT, MissionDifficulty.EASY, "Eliminate 15 Zombies", Material.ROTTEN_FLESH, 15));
+        pool.add(new MissionTemplate("h_skeletons", MissionType.HUNT, MissionDifficulty.EASY, "Eliminate 15 Skeletons", Material.BONE, 15));
+        pool.add(new MissionTemplate("h_spiders", MissionType.HUNT, MissionDifficulty.EASY, "Eliminate 12 Spiders", Material.STRING, 12));
+        pool.add(new MissionTemplate("h_creepers", MissionType.HUNT, MissionDifficulty.EASY, "Eliminate 10 Creepers", Material.GUNPOWDER, 10));
+        pool.add(new MissionTemplate("h_cows", MissionType.HUNT, MissionDifficulty.EASY, "Hunt 10 Cows", Material.LEATHER, 10));
+        pool.add(new MissionTemplate("h_pigs", MissionType.HUNT, MissionDifficulty.EASY, "Hunt 10 Pigs", Material.PORKCHOP, 10));
+        pool.add(new MissionTemplate("h_chickens", MissionType.HUNT, MissionDifficulty.EASY, "Hunt 15 Chickens", Material.FEATHER, 15));
+        pool.add(new MissionTemplate("h_sheep", MissionType.HUNT, MissionDifficulty.EASY, "Hunt 10 Sheep", Material.WHITE_WOOL, 10));
+        pool.add(new MissionTemplate("h_squid", MissionType.HUNT, MissionDifficulty.EASY, "Hunt 8 Squids", Material.INK_SAC, 8));
+        pool.add(new MissionTemplate("h_drowned", MissionType.HUNT, MissionDifficulty.EASY, "Eliminate 10 Drowned", Material.COPPER_INGOT, 5));
+
+        // MEDIUM HUNTING (10)
+        pool.add(new MissionTemplate("h_cave_spiders", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 10 Cave Spiders", Material.SPIDER_EYE, 10));
+        pool.add(new MissionTemplate("h_endermen", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 8 Endermen", Material.ENDER_PEARL, 8));
+        pool.add(new MissionTemplate("h_witch", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 3 Witches", Material.GLASS_BOTTLE, 3));
+        pool.add(new MissionTemplate("h_piglins", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 12 Piglins", Material.GOLD_NUGGET, 24));
+        pool.add(new MissionTemplate("h_hoglins", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 8 Hoglins", Material.LEATHER, 12));
+        pool.add(new MissionTemplate("h_magma_cubes", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 10 Magma Cubes", Material.MAGMA_CREAM, 10));
+        pool.add(new MissionTemplate("h_slime", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 8 Slimes", Material.SLIME_BALL, 8));
+        pool.add(new MissionTemplate("h_guardians", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 6 Guardians", Material.PRISMARINE_SHARD, 6));
+        pool.add(new MissionTemplate("h_pillagers", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 10 Pillagers", Material.CROSSBOW, 1));
+        pool.add(new MissionTemplate("h_phantom", MissionType.HUNT, MissionDifficulty.MEDIUM, "Eliminate 5 Phantoms", Material.PHANTOM_MEMBRANE, 3));
+
+        // HARD HUNTING (10)
+        pool.add(new MissionTemplate("h_blazes", MissionType.HUNT, MissionDifficulty.HARD, "Eliminate 15 Blazes", Material.BLAZE_ROD, 15));
+        pool.add(new MissionTemplate("h_wither_skeletons", MissionType.HUNT, MissionDifficulty.HARD, "Obtain 1 Wither Skeleton Skull", Material.WITHER_SKELETON_SKULL, 1));
+        pool.add(new MissionTemplate("h_ghast", MissionType.HUNT, MissionDifficulty.HARD, "Eliminate 3 Ghasts", Material.GHAST_TEAR, 2));
+        pool.add(new MissionTemplate("h_ravager", MissionType.HUNT, MissionDifficulty.HARD, "Eliminate 1 Ravager", Material.SADDLE, 1));
+        pool.add(new MissionTemplate("h_evoker", MissionType.HUNT, MissionDifficulty.HARD, "Eliminate 2 Evokers", Material.TOTEM_OF_UNDYING, 1));
+        pool.add(new MissionTemplate("h_elder_guardian", MissionType.HUNT, MissionDifficulty.HARD, "Eliminate 1 Elder Guardian", Material.SPONGE, 1));
+        pool.add(new MissionTemplate("h_piglin_brute", MissionType.HUNT, MissionDifficulty.HARD, "Eliminate 3 Piglin Brutes", Material.GOLDEN_AXE, 1));
+        pool.add(new MissionTemplate("h_shulkers", MissionType.HUNT, MissionDifficulty.HARD, "Eliminate 6 Shulkers", Material.SHULKER_SHELL, 4));
+        pool.add(new MissionTemplate("h_breeze", MissionType.HUNT, MissionDifficulty.HARD, "Eliminate 4 Breezes", Material.BREEZE_ROD, 4));
+        pool.add(new MissionTemplate("h_wither", MissionType.HUNT, MissionDifficulty.HARD, "Defeat 1 Wither", Material.NETHER_STAR, 1));
+
+        return pool;
+    }
+
+    private record MissionTemplate(String id, MissionType type, MissionDifficulty difficulty, String description, Material targetMaterial, int requiredAmount) {}
+}
