@@ -1,13 +1,18 @@
 package com.deceptionsmp.missions.manager;
 
-import com.deceptionsmp.missions.model.MissionDifficulty;
-import com.deceptionsmp.missions.model.MissionType;
 import org.bukkit.Material;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class MissionPoolData {
+
+    public enum MissionType {
+        GATHER, CRAFT, HUNT
+    }
+
+    public enum MissionDifficulty {
+        EASY, MEDIUM, HARD
+    }
 
     public static List<MissionTemplate> getPool() {
         List<MissionTemplate> pool = new ArrayList<>();
