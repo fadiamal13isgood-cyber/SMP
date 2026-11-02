@@ -2,5 +2,23 @@ name: DeceptionMissions
 version: 2.2.0
 main: com.deceptionsmp.missions.DeceptionMissions
 api-version: '1.21'
-author: DeceptionSMP
-description: Custom secret mission system for Deception SMP
+author: fadiamal13
+description: Deception SMP Secret Missions and Bounty System.
+
+commands:
+  mission:
+    description: View your active secret mission, progress, and remaining time.
+    usage: /mission
+    aliases: [m, missions, quest]
+  bounty:
+    description: View or set player bounties on the SMP.
+    usage: /bounty [list|set]
+    aliases: [bounties, b]
+
+permissions:
+  deceptionsmp.missions.user:
+    description: Allows players to receive missions and check progress.
+    default: true
+  deceptionsmp.bounty.user:
+    description: Allows players to view and interact with the bounty system.
+    default: true
