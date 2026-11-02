@@ -21,10 +21,8 @@ public class PlayerJoinListener implements Listener {
         Mission active = plugin.getMissionManager().getActiveMission(player.getUniqueId());
 
         if (active == null) {
-            // Only assign a fresh mission if they don't have an active one
             plugin.getMissionManager().assignRandomMission(player);
         } else {
-            // Keep existing mission and notify player their progress is safe
             player.sendMessage("§a[Missions] Welcome back! Your active mission (" + active.getDescription() + ") is still active.");
         }
     }
