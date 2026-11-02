@@ -16,14 +16,12 @@ public class PlayerJoinListener implements Listener {
     }
 
     @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        Mission mission = plugin.getMissionManager().getActiveMission(player.getUniqueId());
+        Mission active = plugin.getMissionManager().getActiveMission(player.getUniqueId());
 
-        if (mission == null) {
+        if (active == null) {
             plugin.getMissionManager().assignRandomMission(player);
-        } else if (System.currentTimeMillis() >= mission.getDeadlineTimestamp()) {
-            plugin.getMissionManager().failMission(player.getUniqueId(), mission);
         }
     }
 }
