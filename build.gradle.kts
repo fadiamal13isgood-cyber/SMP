@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.deceptionsmp"
-version = "2.3.5" // Change this from 2.1.0 to 2.2.0
+version = "2.4.0" // Change this from 2.1.0 to 2.2.0
 
 repositories {
     mavenCentral()
