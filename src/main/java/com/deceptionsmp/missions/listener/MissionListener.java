@@ -1,6 +1,7 @@
 package com.deceptionsmp.missions.listener;
 
 import com.deceptionsmp.missions.DeceptionMissions;
+import com.deceptionsmp.missions.model.Mission;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,47 +23,41 @@ public class MissionListener implements Listener {
         this.plugin = plugin;
     }
 
-    // 1. GATHER / MINE MISSIONS (Blocks broken)
+    // 1. Mine/Gather Blocks
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        String blockMaterial = event.getBlock().getType().name();
-        plugin.getMissionManager().checkProgress(player, "GATHER", 1, blockMaterial);
+        checkMissionItem(player, event.getBlock().getType(), 1);
     }
 
-    // 2. PICK UP ITEMS (Ground / Loot)
+    // 2. Pick up items from the ground
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemPickup(EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         ItemStack item = event.getItem().getItemStack();
-        plugin.getMissionManager().checkProgress(player, "GATHER", item.getAmount(), item.getType().name());
+        checkMissionItem(player, item.getType(), item.getAmount());
     }
 
-    // 3. CHEST LOOTING & CREATIVE MODE SPAWNS (Inventory clicks / taking from containers)
+    // 3. Looting containers (Chests/Barrels/Shulkers) or grabbing from Creative
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        
-        // Check if player is interacting with a chest, barrel, shulker box, player inventory, or creative menu
+
+        ItemStack clickedItem = event.getCurrentItem();
+        if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+
         InventoryType invType = event.getInventory().getType();
         if (invType == InventoryType.CHEST || invType == InventoryType.BARREL || 
             invType == InventoryType.SHULKER_BOX || invType == InventoryType.CREATIVE || 
             invType == InventoryType.PLAYER || invType == InventoryType.CRAFTING) {
-            
-            ItemStack clickedItem = event.getCurrentItem();
-            // If they are moving an item into their inventory from a chest/creative menu
-            if (clickedItem != null && clickedItem.getType() != Material.AIR) {
-                // Only count when moving items into player's main inventory / hotbar slots
-                if (event.getClickedInventory() != null && event.getClickedInventory().getType() != InventoryType.PLAYER &&
-                    event.isShiftClick() || (event.getRawSlot() >= event.getView().getTopInventory().getSize())) {
-                    
-                    plugin.getMissionManager().checkProgress(player, "GATHER", clickedItem.getAmount(), clickedItem.getType().name());
-                }
+
+            if (event.getRawSlot() >= event.getView().getTopInventory().getSize() || event.isShiftClick()) {
+                checkMissionItem(player, clickedItem.getType(), clickedItem.getAmount());
             }
         }
     }
 
-    // 4. CRAFT MISSIONS
+    // 4. Crafting Items
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftItem(CraftItemEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -73,21 +68,15 @@ public class MissionListener implements Listener {
         String itemMaterial = result.getType().name();
         int amountCrafted = result.getAmount();
 
-        // Handle shift-clicking full recipe results
         if (event.isShiftClick()) {
-            int maxPossible = getMaxCraftAmount(event);
-            amountCrafted *= maxPossible;
+            amountCrafted *= getMaxCraftAmount(event);
         }
 
         plugin.getMissionManager().checkProgress(player, "CRAFT", amountCrafted, itemMaterial);
     }
 
-    // Helper utility to calculate shift-click bulk crafting amounts
     private int getMaxCraftAmount(CraftItemEvent event) {
-        ItemStack result = event.getRecipe().getResult();
-        int resultingAmount = result.getAmount();
         int lowest = 64;
-
         for (ItemStack ingredient : event.getInventory().getMatrix()) {
             if (ingredient != null && ingredient.getType() != Material.AIR) {
                 lowest = Math.min(lowest, ingredient.getAmount());
@@ -96,7 +85,7 @@ public class MissionListener implements Listener {
         return Math.max(1, lowest);
     }
 
-    // 5. HUNT / KILL MISSIONS
+    // 5. Hunting / Killing mobs & collecting drops
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent event) {
         Player killer = event.getEntity().getKiller();
@@ -107,7 +96,17 @@ public class MissionListener implements Listener {
                 plugin.getMissionManager().checkProgress(killer, "HUNT", drop.getAmount(), drop.getType().name());
             }
         }
-        
+
         plugin.getMissionManager().checkProgress(killer, "HUNT", 1, event.getEntityType().name());
+    }
+
+    private void checkMissionItem(Player player, Material material, int amount) {
+        Mission mission = plugin.getMissionManager().getActiveMission(player.getUniqueId());
+        if (mission == null) return;
+
+        String target = mission.getTargetMaterial();
+        if (target != null && target.equalsIgnoreCase(material.name())) {
+            plugin.getMissionManager().checkProgress(player, mission.getType(), amount, material.name());
+        }
     }
 }
