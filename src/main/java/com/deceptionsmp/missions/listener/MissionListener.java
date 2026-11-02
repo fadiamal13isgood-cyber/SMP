@@ -23,14 +23,12 @@ public class MissionListener implements Listener {
         this.plugin = plugin;
     }
 
-    // 1. Mine/Gather Blocks
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         checkMissionItem(player, event.getBlock().getType(), 1);
     }
 
-    // 2. Pick up items from the ground
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemPickup(EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
@@ -38,7 +36,6 @@ public class MissionListener implements Listener {
         checkMissionItem(player, item.getType(), item.getAmount());
     }
 
-    // 3. Looting containers (Chests/Barrels/Shulkers) or grabbing from Creative
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -57,7 +54,6 @@ public class MissionListener implements Listener {
         }
     }
 
-    // 4. Crafting Items
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftItem(CraftItemEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -85,9 +81,15 @@ public class MissionListener implements Listener {
         return Math.max(1, lowest);
     }
 
-    // 5. Hunting / Killing mobs & collecting drops
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent event) {
+        if (event.getEntity() instanceof Player victim) {
+            Player killer = victim.getKiller();
+            if (killer != null && !killer.equals(victim)) {
+                plugin.getMissionManager().checkProgress(killer, "HUNT_PLAYER", 1, victim.getName());
+            }
+        }
+
         Player killer = event.getEntity().getKiller();
         if (killer == null) return;
 
