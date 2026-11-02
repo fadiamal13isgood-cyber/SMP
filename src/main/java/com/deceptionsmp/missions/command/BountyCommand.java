@@ -11,9 +11,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class BountyCommand implements CommandExecutor {
 
     private final DeceptionMissions plugin;
+
+    // Shared map to track pending bounty target selections / confirmations
+    public static final Map<UUID, UUID> pendingBountyTargets = new HashMap<>();
 
     public BountyCommand(DeceptionMissions plugin) {
         this.plugin = plugin;
@@ -26,6 +33,7 @@ public class BountyCommand implements CommandExecutor {
             return true;
         }
 
+        // Subcommand: /bounty check <username>
         if (args.length >= 2 && args[0].equalsIgnoreCase("check")) {
             String targetName = args[1];
             Player targetPlayer = Bukkit.getPlayer(targetName);
@@ -35,6 +43,7 @@ public class BountyCommand implements CommandExecutor {
                 return true;
             }
 
+            // Safely displays preview without giving items
             player.sendMessage(Component.text("========================================", NamedTextColor.DARK_RED));
             player.sendMessage(Component.text(" BOUNTY DETAILS: ", NamedTextColor.GOLD, TextDecoration.BOLD)
                     .append(Component.text(targetPlayer.getName(), NamedTextColor.WHITE)));
@@ -49,6 +58,7 @@ public class BountyCommand implements CommandExecutor {
             return true;
         }
 
+        // Default Help Menu
         player.sendMessage(Component.text("========================================", NamedTextColor.RED));
         player.sendMessage(Component.text(" BOUNTY SYSTEM: ", NamedTextColor.GOLD, TextDecoration.BOLD));
         player.sendMessage(Component.text(" • /bounty check <player> ", NamedTextColor.YELLOW)
