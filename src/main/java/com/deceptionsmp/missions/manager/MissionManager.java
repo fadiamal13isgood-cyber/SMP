@@ -39,23 +39,64 @@ public class MissionManager {
         List<MissionPoolData.MissionTemplate> availablePool = MissionPoolData.getPool();
         String lastId = lastCompletedMissionId.get(player.getUniqueId());
 
+        // Weighted Odds: 50% Easy, 35% Medium, 15% Hard
+        int roll = random.nextInt(100);
+        MissionPoolData.MissionDifficulty targetDifficulty;
+        if (roll < 50) {
+            targetDifficulty = MissionPoolData.MissionDifficulty.EASY;
+        } else if (roll < 85) {
+            targetDifficulty = MissionPoolData.MissionDifficulty.MEDIUM;
+        } else {
+            targetDifficulty = MissionPoolData.MissionDifficulty.HARD;
+        }
+
         List<MissionPoolData.MissionTemplate> filteredPool = new ArrayList<>();
         for (MissionPoolData.MissionTemplate t : availablePool) {
-            if (!t.id().equalsIgnoreCase(lastId)) {
+            if (t.difficulty() == targetDifficulty && !t.id().equalsIgnoreCase(lastId)) {
                 filteredPool.add(t);
             }
         }
 
+        if (filteredPool.isEmpty()) {
+            for (MissionPoolData.MissionTemplate t : availablePool) {
+                if (!t.id().equalsIgnoreCase(lastId)) filteredPool.add(t);
+            }
+        }
         if (filteredPool.isEmpty()) filteredPool = availablePool;
 
         MissionPoolData.MissionTemplate chosen = filteredPool.get(random.nextInt(filteredPool.size()));
-        long deadline = System.currentTimeMillis() + (chosen.difficulty() == MissionPoolData.MissionDifficulty.EASY ? 1800000L : 3600000L);
+
+        // Extended Timers: Easy = 2 hrs, Medium = 4 hrs, Hard = 8 hrs
+        long durationMs;
+        if (chosen.difficulty() == MissionPoolData.MissionDifficulty.EASY) {
+            durationMs = 7200000L;   // 2 Hours
+        } else if (chosen.difficulty() == MissionPoolData.MissionDifficulty.MEDIUM) {
+            durationMs = 14400000L;  // 4 Hours
+        } else {
+            durationMs = 28800000L;  // 8 Hours
+        }
+
+        long deadline = System.currentTimeMillis() + durationMs;
+
+        String targetMaterial = chosen.targetMaterial() != null ? chosen.targetMaterial().name() : "";
+
+        // If it's a player hunt mission, target an online player
+        if (chosen.type() == MissionPoolData.MissionType.HUNT_PLAYER) {
+            List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
+            onlinePlayers.remove(player);
+            if (!onlinePlayers.isEmpty()) {
+                Player targetPlayer = onlinePlayers.get(random.nextInt(onlinePlayers.size()));
+                targetMaterial = targetPlayer.getName();
+            } else {
+                targetMaterial = "Any Player";
+            }
+        }
 
         Mission mission = new Mission(
                 chosen.id(),
                 MissionDifficulty.valueOf(chosen.difficulty().name()),
                 chosen.type().name(),
-                chosen.targetMaterial().name(),
+                targetMaterial,
                 chosen.requiredAmount(),
                 deadline
         );
@@ -104,9 +145,7 @@ public class MissionManager {
 
         boolean typeMatch = mission.getType() != null && mission.getType().equalsIgnoreCase(missionTypeStr);
         String missionTargetStr = mission.getTargetMaterial() != null ? mission.getTargetMaterial() : "";
-        
-        // Match target material or entity name (case insensitive)
-        boolean targetMatch = target == null || target.isEmpty() || missionTargetStr.equalsIgnoreCase(target);
+        boolean targetMatch = target == null || target.isEmpty() || missionTargetStr.equalsIgnoreCase(target) || missionTargetStr.equalsIgnoreCase("Any Player");
 
         if (typeMatch && targetMatch) {
             mission.setProgress(mission.getProgress() + amount);
@@ -144,7 +183,6 @@ public class MissionManager {
     }
 
     private void rewardPlayer(Player player, MissionDifficulty difficulty) {
-        // 0.5% Chance Jackpot Reward: Max Hearts Upgrade
         if (random.nextDouble() * 100.0 <= 0.5) {
             AttributeInstance maxHealthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
             if (maxHealthAttr != null) {
@@ -161,7 +199,6 @@ public class MissionManager {
             }
         }
 
-        // Material / Custom Items Reward
         List<ItemStack> rewards = new ArrayList<>();
         if (difficulty == MissionDifficulty.EASY) {
             rewards.add(new ItemStack(org.bukkit.Material.IRON_INGOT, 8 + random.nextInt(9)));
@@ -189,7 +226,6 @@ public class MissionManager {
     private void applyQuestBuffs(Player player, MissionDifficulty difficulty) {
         player.sendMessage(Component.text("BUFFS ACQUIRED:", NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD));
 
-        // 5% God-Tier Buff Chance
         if (random.nextDouble() * 100.0 <= 5.0) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 6000, 3, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 6000, 0, true, true));
