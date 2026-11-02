@@ -53,7 +53,12 @@ public class Mission {
     }
 
     public String getDescription() {
-        String targetName = targetMaterial != null ? targetMaterial.replace("_", " ") : "Items";
-        return "Gather " + requiredAmount + "x " + targetName;
+        if (type.equalsIgnoreCase("HUNT_PLAYER")) {
+            return "Assassinate Player: " + targetMaterial;
+        }
+        String actionStr = type.equalsIgnoreCase("GATHER") ? "Mine/Gather" :
+                           type.equalsIgnoreCase("CRAFT") ? "Craft" : "Eliminate/Hunt";
+        String targetName = targetMaterial != null ? targetMaterial.replace("_", " ") : "Targets";
+        return actionStr + " " + requiredAmount + "x " + targetName;
     }
 }
