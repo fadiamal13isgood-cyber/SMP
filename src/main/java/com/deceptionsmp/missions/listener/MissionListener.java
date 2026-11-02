@@ -1,57 +1,55 @@
 package com.deceptionsmp.missions.listener;
 
 import com.deceptionsmp.missions.DeceptionMissions;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class MissionListener implements Listener {
 
     private final DeceptionMissions plugin;
-    private final Map<UUID, Long> killCooldowns = new HashMap<>();
 
     public MissionListener(DeceptionMissions plugin) {
         this.plugin = plugin;
     }
 
-    @EventHandler
-    public void onPlayerKill(PlayerDeathEvent event) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        String blockMaterial = event.getBlock().getType().name();
+        
+        plugin.getMissionManager().checkProgress(player, "GATHER", 1, blockMaterial);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCraftItem(CraftItemEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        ItemStack result = event.getRecipe().getResult();
+        if (result == null) return;
+
+        String itemMaterial = result.getType().name();
+        int amountCrafted = result.getAmount();
+
+        plugin.getMissionManager().checkProgress(player, "CRAFT", amountCrafted, itemMaterial);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityDeath(EntityDeathEvent event) {
         Player killer = event.getEntity().getKiller();
         if (killer == null) return;
 
-        UUID killerId = killer.getUniqueId();
-        long now = System.currentTimeMillis();
-
-        if (killCooldowns.containsKey(killerId) && (now - killCooldowns.get(killerId) < 300000)) {
-            return; // Anti-farming: 5-minute cooldown between counted kills
+        for (ItemStack drop : event.getDrops()) {
+            if (drop != null) {
+                plugin.getMissionManager().checkProgress(killer, "HUNT", drop.getAmount(), drop.getType().name());
+            }
         }
-
-        killCooldowns.put(killerId, now);
-        plugin.getMissionManager().checkProgress(killer, "KILL_PLAYERS", 1, "");
-    }
-
-    @EventHandler
-    public void onItemPickup(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
-        String mat = event.getItem().getItemStack().getType().name();
-        int amount = event.getItem().getItemStack().getAmount();
-        plugin.getMissionManager().checkProgress(player, "COLLECT_ITEMS", amount, mat);
-    }
-
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event) {
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX() && event.getFrom().getBlockZ() == event.getTo().getBlockZ()) return;
-        Player player = event.getPlayer();
-        Location spawn = player.getWorld().getSpawnLocation();
-        int dist = (int) player.getLocation().distance(spawn);
-        plugin.getMissionManager().checkProgress(player, "EXPLORE", dist, "");
+        
+        plugin.getMissionManager().checkProgress(killer, "HUNT", 1, event.getEntityType().name());
     }
 }
