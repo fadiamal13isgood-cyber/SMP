@@ -104,6 +104,8 @@ public class MissionManager {
 
         boolean typeMatch = mission.getType() != null && mission.getType().equalsIgnoreCase(missionTypeStr);
         String missionTargetStr = mission.getTargetMaterial() != null ? mission.getTargetMaterial() : "";
+        
+        // Match target material or entity name (case insensitive)
         boolean targetMatch = target == null || target.isEmpty() || missionTargetStr.equalsIgnoreCase(target);
 
         if (typeMatch && targetMatch) {
@@ -142,6 +144,7 @@ public class MissionManager {
     }
 
     private void rewardPlayer(Player player, MissionDifficulty difficulty) {
+        // 0.5% Chance Jackpot Reward: Max Hearts Upgrade
         if (random.nextDouble() * 100.0 <= 0.5) {
             AttributeInstance maxHealthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
             if (maxHealthAttr != null) {
@@ -158,6 +161,7 @@ public class MissionManager {
             }
         }
 
+        // Material / Custom Items Reward
         List<ItemStack> rewards = new ArrayList<>();
         if (difficulty == MissionDifficulty.EASY) {
             rewards.add(new ItemStack(org.bukkit.Material.IRON_INGOT, 8 + random.nextInt(9)));
@@ -185,6 +189,7 @@ public class MissionManager {
     private void applyQuestBuffs(Player player, MissionDifficulty difficulty) {
         player.sendMessage(Component.text("BUFFS ACQUIRED:", NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD));
 
+        // 5% God-Tier Buff Chance
         if (random.nextDouble() * 100.0 <= 5.0) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 6000, 3, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 6000, 0, true, true));
