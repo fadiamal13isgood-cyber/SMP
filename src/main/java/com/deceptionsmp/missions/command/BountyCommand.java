@@ -22,13 +22,8 @@ public class BountyCommand implements CommandExecutor {
 
     private final DeceptionMissions plugin;
 
-    // Session for players setting a bounty inside the set GUI
     public static final HashMap<UUID, String> bountyTargets = new HashMap<>();
-
-    // Target Username (lowercase) -> List of Bounty ItemStacks placed on them
     public static final Map<String, List<ItemStack>> activeBounties = new HashMap<>();
-
-    // Unclaimed rewards buffer per killer UUID -> List of earned bounty ItemStacks
     public static final Map<UUID, List<ItemStack>> unclaimedBountyRewards = new HashMap<>();
 
     public BountyCommand(DeceptionMissions plugin) {
@@ -47,7 +42,6 @@ public class BountyCommand implements CommandExecutor {
             return true;
         }
 
-        // --- SUBCOMMAND: /bounty claim ---
         if (args.length == 1 && args[0].equalsIgnoreCase("claim")) {
             List<ItemStack> rewards = unclaimedBountyRewards.get(player.getUniqueId());
 
@@ -69,38 +63,25 @@ public class BountyCommand implements CommandExecutor {
             return true;
         }
 
-        // --- SUBCOMMAND: /bounty list ---
         if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
             if (activeBounties.isEmpty()) {
                 player.sendMessage(Component.text("There are currently no active bounties.", NamedTextColor.YELLOW));
                 return true;
             }
 
-            // Calculate total item amounts per target and sort descending
-            List> sortedBounties = new ArrayList<>();
+            player.sendMessage(Component.text("--- Active Bounties ---", NamedTextColor.GOLD, TextDecoration.BOLD));
+            int count = 1;
             for (Map.Entry<String, List<ItemStack>> entry : activeBounties.entrySet()) {
+                if (count > 10) break;
                 int totalAmount = 0;
                 for (ItemStack item : entry.getValue()) {
-                    if (item != null && item.getType() != Material.AIR) {
-                        totalAmount += item.getAmount();
-                    }
+                    if (item != null) totalAmount += item.getAmount();
                 }
-                if (totalAmount > 0) {
-                    sortedBounties.add(new AbstractMap.SimpleEntry<>(entry.getKey(), totalAmount));
-                }
-            }
-
-            sortedBounties.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
-
-            player.sendMessage(Component.text("--- Active Bounties Leaderboard ---", NamedTextColor.GOLD, TextDecoration.BOLD));
-            int rank = 1;
-            for (Map.Entry<String, Integer> entry : sortedBounties) {
-                if (rank > 10) break; // Show top 10
-                player.sendMessage(Component.text("#" + rank + " ", NamedTextColor.YELLOW)
+                player.sendMessage(Component.text("#" + count + " ", NamedTextColor.YELLOW)
                         .append(Component.text(entry.getKey(), NamedTextColor.WHITE))
-                        .append(Component.text(" — Total Items: ", NamedTextColor.GRAY))
-                        .append(Component.text(entry.getValue(), NamedTextColor.AQUA)));
-                rank++;
+                        .append(Component.text(" — Items: ", NamedTextColor.GRAY))
+                        .append(Component.text(totalAmount, NamedTextColor.AQUA)));
+                count++;
             }
             return true;
         }
@@ -113,10 +94,8 @@ public class BountyCommand implements CommandExecutor {
         String targetName = args[0];
         String action = args[1];
 
-        // --- SUBCOMMAND: /bounty <username> set ---
         if (action.equalsIgnoreCase("set")) {
             Player target = Bukkit.getPlayerExact(targetName);
-
             if (target == null) {
                 player.sendMessage(Component.text("Player '" + targetName + "' is offline or does not exist!", NamedTextColor.RED));
                 return true;
@@ -124,23 +103,19 @@ public class BountyCommand implements CommandExecutor {
 
             Inventory bountyGui = Bukkit.createInventory(player, 27, Component.text("Bounty: " + target.getName()));
             bountyTargets.put(player.getUniqueId(), target.getName());
-
             player.openInventory(bountyGui);
             player.sendMessage(Component.text("Place items inside the GUI and close it to set the bounty!", NamedTextColor.GREEN));
             return true;
         }
 
-        // --- SUBCOMMAND: /bounty <username> check ---
         if (action.equalsIgnoreCase("check")) {
             List<ItemStack> bountyItems = activeBounties.get(targetName.toLowerCase());
-
             if (bountyItems == null || bountyItems.isEmpty()) {
                 player.sendMessage(Component.text("There is currently no active bounty on " + targetName + ".", NamedTextColor.YELLOW));
                 return true;
             }
 
             Inventory checkGui = Bukkit.createInventory(null, 27, Component.text("Bounty Rewards: " + targetName));
-
             int slot = 0;
             for (ItemStack item : bountyItems) {
                 if (slot >= 27) break;
@@ -160,17 +135,11 @@ public class BountyCommand implements CommandExecutor {
 
     private void sendHelp(Player player) {
         player.sendMessage(Component.text("--- Bounty Help ---", NamedTextColor.GOLD, TextDecoration.BOLD));
-        player.sendMessage(Component.text("/bounty <username> set ", NamedTextColor.YELLOW)
-                .append(Component.text("- Open GUI to place a bounty on someone", NamedTextColor.WHITE)));
-        player.sendMessage(Component.text("/bounty <username> check ", NamedTextColor.YELLOW)
-                .append(Component.text("- View current bounty on someone", NamedTextColor.WHITE)));
-        player.sendMessage(Component.text("/bounty claim ", NamedTextColor.YELLOW)
-                .append(Component.text("- Open GUI to claim your earned bounty rewards", NamedTextColor.WHITE)));
-        player.sendMessage(Component.text("/bounty list ", NamedTextColor.YELLOW)
-                .append(Component.text("- View active bounties leaderboard", NamedTextColor.WHITE)));
+        player.sendMessage(Component.text("/bounty <username> set - Open GUI to place a bounty", NamedTextColor.YELLOW));
+        player.sendMessage(Component.text("/bounty <username> check - View current bounty", NamedTextColor.YELLOW));
+        player.sendMessage(Component.text("/bounty claim - Claim your earned bounty rewards", NamedTextColor.YELLOW));
+        player.sendMessage(Component.text("/bounty list - View active bounties", NamedTextColor.YELLOW));
     }
-
-    // --- SAVE AND LOAD DATA ---
 
     public static void saveBountyData(DeceptionMissions plugin) {
         File file = new File(plugin.getDataFolder(), "bounties.yml");
@@ -188,7 +157,6 @@ public class BountyCommand implements CommandExecutor {
             config.save(file);
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to save bounties.yml data!");
-            e.printStackTrace();
         }
     }
 
