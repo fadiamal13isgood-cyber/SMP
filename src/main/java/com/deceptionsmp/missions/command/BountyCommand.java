@@ -9,15 +9,14 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public class BountyCommand implements CommandExecutor {
 
@@ -57,7 +56,6 @@ public class BountyCommand implements CommandExecutor {
                 return true;
             }
 
-            // Create GUI containing all unclaimed rewards across multiple kills
             Inventory claimGui = Bukkit.createInventory(player, 54, Component.text("Your Unclaimed Bounties"));
             for (int i = 0; i < Math.min(rewards.size(), 54); i++) {
                 ItemStack item = rewards.get(i);
@@ -68,6 +66,42 @@ public class BountyCommand implements CommandExecutor {
 
             player.openInventory(claimGui);
             player.sendMessage(Component.text("Take your bounty rewards out of the GUI!", NamedTextColor.GREEN));
+            return true;
+        }
+
+        // --- SUBCOMMAND: /bounty list ---
+        if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
+            if (activeBounties.isEmpty()) {
+                player.sendMessage(Component.text("There are currently no active bounties.", NamedTextColor.YELLOW));
+                return true;
+            }
+
+            // Calculate total item amounts per target and sort descending
+            List> sortedBounties = new ArrayList<>();
+            for (Map.Entry<String, List<ItemStack>> entry : activeBounties.entrySet()) {
+                int totalAmount = 0;
+                for (ItemStack item : entry.getValue()) {
+                    if (item != null && item.getType() != Material.AIR) {
+                        totalAmount += item.getAmount();
+                    }
+                }
+                if (totalAmount > 0) {
+                    sortedBounties.add(new AbstractMap.SimpleEntry<>(entry.getKey(), totalAmount));
+                }
+            }
+
+            sortedBounties.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+
+            player.sendMessage(Component.text("--- Active Bounties Leaderboard ---", NamedTextColor.GOLD, TextDecoration.BOLD));
+            int rank = 1;
+            for (Map.Entry<String, Integer> entry : sortedBounties) {
+                if (rank > 10) break; // Show top 10
+                player.sendMessage(Component.text("#" + rank + " ", NamedTextColor.YELLOW)
+                        .append(Component.text(entry.getKey(), NamedTextColor.WHITE))
+                        .append(Component.text(" — Total Items: ", NamedTextColor.GRAY))
+                        .append(Component.text(entry.getValue(), NamedTextColor.AQUA)));
+                rank++;
+            }
             return true;
         }
 
@@ -131,6 +165,65 @@ public class BountyCommand implements CommandExecutor {
         player.sendMessage(Component.text("/bounty <username> check ", NamedTextColor.YELLOW)
                 .append(Component.text("- View current bounty on someone", NamedTextColor.WHITE)));
         player.sendMessage(Component.text("/bounty claim ", NamedTextColor.YELLOW)
-                .append(Component.text("- Open GUI to claim all your earned bounty rewards", NamedTextColor.WHITE)));
+                .append(Component.text("- Open GUI to claim your earned bounty rewards", NamedTextColor.WHITE)));
+        player.sendMessage(Component.text("/bounty list ", NamedTextColor.YELLOW)
+                .append(Component.text("- View active bounties leaderboard", NamedTextColor.WHITE)));
+    }
+
+    // --- SAVE AND LOAD DATA ---
+
+    public static void saveBountyData(DeceptionMissions plugin) {
+        File file = new File(plugin.getDataFolder(), "bounties.yml");
+        YamlConfiguration config = new YamlConfiguration();
+
+        for (Map.Entry<String, List<ItemStack>> entry : activeBounties.entrySet()) {
+            config.set("active." + entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<UUID, List<ItemStack>> entry : unclaimedBountyRewards.entrySet()) {
+            config.set("unclaimed." + entry.getKey().toString(), entry.getValue());
+        }
+
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            plugin.getLogger().severe("Failed to save bounties.yml data!");
+            e.printStackTrace();
+        }
+    }
+
+    public static void loadBountyData(DeceptionMissions plugin) {
+        File file = new File(plugin.getDataFolder(), "bounties.yml");
+        if (!file.exists()) return;
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        activeBounties.clear();
+        unclaimedBountyRewards.clear();
+
+        if (config.isConfigurationSection("active")) {
+            for (String key : config.getConfigurationSection("active").getKeys(false)) {
+                List<?> rawList = config.getList("active." + key);
+                if (rawList != null) {
+                    List<ItemStack> items = new ArrayList<>();
+                    for (Object obj : rawList) {
+                        if (obj instanceof ItemStack is) items.add(is);
+                    }
+                    activeBounties.put(key, items);
+                }
+            }
+        }
+
+        if (config.isConfigurationSection("unclaimed")) {
+            for (String key : config.getConfigurationSection("unclaimed").getKeys(false)) {
+                List<?> rawList = config.getList("unclaimed." + key);
+                if (rawList != null) {
+                    List<ItemStack> items = new ArrayList<>();
+                    for (Object obj : rawList) {
+                        if (obj instanceof ItemStack is) items.add(is);
+                    }
+                    unclaimedBountyRewards.put(UUID.fromString(key), items);
+                }
+            }
+        }
     }
 }
