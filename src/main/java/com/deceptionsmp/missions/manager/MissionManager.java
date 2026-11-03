@@ -39,7 +39,6 @@ public class MissionManager {
         List<MissionPoolData.MissionTemplate> availablePool = MissionPoolData.getPool();
         String lastId = lastCompletedMissionId.get(player.getUniqueId());
 
-        // Weighted Odds: 50% Easy, 35% Medium, 15% Hard
         int roll = random.nextInt(100);
         MissionPoolData.MissionDifficulty targetDifficulty;
         if (roll < 50) {
@@ -66,21 +65,18 @@ public class MissionManager {
 
         MissionPoolData.MissionTemplate chosen = filteredPool.get(random.nextInt(filteredPool.size()));
 
-        // Extended Timers: Easy = 2 hrs, Medium = 4 hrs, Hard = 8 hrs
         long durationMs;
         if (chosen.difficulty() == MissionPoolData.MissionDifficulty.EASY) {
-            durationMs = 7200000L;   // 2 Hours
+            durationMs = 7200000L;
         } else if (chosen.difficulty() == MissionPoolData.MissionDifficulty.MEDIUM) {
-            durationMs = 14400000L;  // 4 Hours
+            durationMs = 14400000L;
         } else {
-            durationMs = 28800000L;  // 8 Hours
+            durationMs = 28800000L;
         }
 
         long deadline = System.currentTimeMillis() + durationMs;
-
         String targetMaterial = chosen.targetMaterial() != null ? chosen.targetMaterial().name() : "";
 
-        // If it's a player hunt mission, target an online player
         if (chosen.type() == MissionPoolData.MissionType.HUNT_PLAYER) {
             List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
             onlinePlayers.remove(player);
@@ -102,41 +98,7 @@ public class MissionManager {
         );
 
         activeMissions.put(player.getUniqueId(), mission);
-        playAssignmentAnimation(player, mission);
-    }
-
-    private void playAssignmentAnimation(Player player, Mission mission) {
-        String[] fakeMissions = {
-            "GATHER 128 COBBLESTONE", "ELIMINATE AN ENDERMAN", "CRAFT A BEACON",
-            "MINE 32 ANCIENT DEBRIS", "TAME 5 WOLVES", "FISH 15 RAW SALMON",
-            "BREW 3 TURTLE MASTER POTIONS", "KILL A WITHER", "EXPLORE AN ANCIENT CITY"
-        };
-
-        new BukkitRunnable() {
-            int ticks = 0;
-            final int maxTicks = 30;
-
-            @Override
-            public void run() {
-                if (ticks < maxTicks) {
-                    if (ticks % 2 == 0) {
-                        String fake = fakeMissions[random.nextInt(fakeMissions.length)];
-                        player.sendActionBar(Component.text("DECRYPTING MISSION: " + fake, NamedTextColor.DARK_GRAY));
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 0.5f, 1.5f + (ticks * 0.02f));
-                    }
-                    ticks++;
-                } else {
-                    player.sendActionBar(Component.text("MISSION ASSIGNED: " + mission.getDescription(), NamedTextColor.RED, TextDecoration.BOLD));
-                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 0.8f);
-                    player.showTitle(Title.title(
-                            Component.text("NEW SECRET MISSION", NamedTextColor.RED, TextDecoration.BOLD),
-                            Component.text(mission.getDescription(), NamedTextColor.GRAY),
-                            Title.Times.times(Duration.ofMillis(300), Duration.ofMillis(2000), Duration.ofMillis(500))
-                    ));
-                    cancel();
-                }
-            }
-        }.runTaskTimer(plugin, 0L, 1L);
+        MissionMessage.sendMissionBox(player, mission);
     }
 
     public void checkProgress(Player player, String missionTypeStr, int amount, String target) {
@@ -183,7 +145,6 @@ public class MissionManager {
     }
 
     private void rewardPlayer(Player player, MissionDifficulty difficulty) {
-        // Permanent Max Heart Jackpot Mechanic (0.5% Chance, 40 HP / 20 Heart Cap)
         if (random.nextDouble() * 100.0 <= 0.5) {
             AttributeInstance maxHealthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
             if (maxHealthAttr != null) {
@@ -194,7 +155,7 @@ public class MissionManager {
                     maxHealthAttr.setBaseValue(currentMax + addedHp);
 
                     player.sendMessage(Component.text("★ JACKPOT REWARD! ", NamedTextColor.GOLD, TextDecoration.BOLD)
-                            .append(Component.text("You gained +" + (addedHp / 2.0) + " Max Hearts! (Cap: 20)", NamedTextColor.LIGHT_PURPLE)));
+                            .append(Component.text("You gained +" + (addedHp / 2.0) + " Max Hearts!", NamedTextColor.LIGHT_PURPLE)));
                     return;
                 }
             }
@@ -230,30 +191,19 @@ public class MissionManager {
         if (random.nextDouble() * 100.0 <= 5.0) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 6000, 3, true, true));
             player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 6000, 0, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 3600, 1, true, true));
-            player.sendMessage(Component.text(" • ⚡ GOD-TIER BUFF OVERLOAD! Absorption IV, Fire Res & Jump Boost II (5:00)", NamedTextColor.GOLD));
+            player.sendMessage(Component.text(" • ⚡ GOD-TIER BUFF OVERLOAD! Absorption IV & Fire Resistance", NamedTextColor.GOLD));
             return;
         }
 
         if (difficulty == MissionDifficulty.EASY) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 2400, 0, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 2400, 0, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 1200, 0, true, true));
-            player.sendMessage(Component.text(" • Speed I (2:00), Night Vision (2:00) & Haste I (1:00)", NamedTextColor.AQUA));
-
+            player.sendMessage(Component.text(" • Speed I (2:00)", NamedTextColor.AQUA));
         } else if (difficulty == MissionDifficulty.MEDIUM) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 3600, 1, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 600, 0, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 2400, 0, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.DOLPHINS_GRACE, 1200, 0, true, true));
-            player.sendMessage(Component.text(" • Haste II (3:00), Regen I (0:30), Water Breathing & Dolphin's Grace", NamedTextColor.AQUA));
-
+            player.sendMessage(Component.text(" • Haste II (3:00)", NamedTextColor.AQUA));
         } else {
             player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 3600, 1, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 2400, 1, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 3600, 1, true, true));
-            player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 2400, 0, true, true));
-            player.sendMessage(Component.text(" • Strength II (3:00), Resistance II (2:00), Health Boost & Fire Res", NamedTextColor.AQUA));
+            player.sendMessage(Component.text(" • Strength II (3:00)", NamedTextColor.AQUA));
         }
     }
 
