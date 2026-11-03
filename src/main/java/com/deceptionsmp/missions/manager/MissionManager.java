@@ -183,6 +183,7 @@ public class MissionManager {
     }
 
     private void rewardPlayer(Player player, MissionDifficulty difficulty) {
+        // Permanent Max Heart Jackpot Mechanic (0.5% Chance, 40 HP / 20 Heart Cap)
         if (random.nextDouble() * 100.0 <= 0.5) {
             AttributeInstance maxHealthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
             if (maxHealthAttr != null) {
