@@ -1,5 +1,7 @@
-package com.deceptionsmp.missions.manager;
+package com.deceptionsmp.missions.listener;
 
+import com.deceptionsmp.missions.DeceptionMissions;
+import com.deceptionsmp.missions.command.BountyCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -13,12 +15,16 @@ import org.bukkit.inventory.ItemStack;
 
 public class BountyListener implements Listener {
 
+    private final DeceptionMissions plugin;
+
+    public BountyListener(DeceptionMissions plugin) {
+        this.plugin = plugin;
+    }
+
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player)) return;
-        Player player = (Player) event.getPlayer();
+        if (!(event.getPlayer() instanceof Player player)) return;
 
-        // Check if this inventory is a Bounty GUI using Adventure Component title check or tracking map
         if (!BountyCommand.bountyTargets.containsKey(player.getUniqueId())) {
             return;
         }
@@ -30,15 +36,14 @@ public class BountyListener implements Listener {
         for (ItemStack item : inv.getContents()) {
             if (item != null && item.getType() != Material.AIR) {
                 totalItems += item.getAmount();
-                // TODO: Add your internal bounty storage / logic here with 'targetName' and 'item'
             }
         }
 
         if (totalItems > 0) {
-            Bukkit.broadcast(Component.text("⚡ A new bounty has been placed on " + targetName + " by " + player.getName() + " worth " + totalItems + " items!", NamedTextColor.GOLD));
-            player.sendMessage(Component.text("Bounty successfully created!", NamedTextColor.GREEN));
+            Bukkit.broadcast(Component.text("⚡ A new bounty has been placed on " + targetName + " by " + player.getName() + " containing " + totalItems + " items!", NamedTextColor.GOLD));
+            player.sendMessage(Component.text("Bounty successfully set on " + targetName + "!", NamedTextColor.GREEN));
         } else {
-            player.sendMessage(Component.text("Bounty creation cancelled (no items placed).", NamedTextColor.RED));
+            player.sendMessage(Component.text("Bounty cancelled (no items placed).", NamedTextColor.RED));
         }
     }
 }
