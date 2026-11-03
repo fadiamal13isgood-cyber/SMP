@@ -35,6 +35,9 @@ public class DeceptionMissions extends JavaPlugin implements CommandExecutor {
         this.missionManager = new MissionManager(this);
         this.bountyManager = new BountyManager(this);
 
+        // Load active and unclaimed bounty data from bounties.yml
+        BountyCommand.loadBountyData(this);
+
         getServer().getPluginManager().registerEvents(new MissionListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new BountyListener(this), this);
@@ -53,6 +56,9 @@ public class DeceptionMissions extends JavaPlugin implements CommandExecutor {
         if (bountyManager != null) {
             bountyManager.saveBounties();
         }
+
+        // Save active and unclaimed bounty data to bounties.yml
+        BountyCommand.saveBountyData(this);
     }
 
     @Override
