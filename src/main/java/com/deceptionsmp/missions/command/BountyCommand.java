@@ -19,7 +19,7 @@ public class BountyCommand implements CommandExecutor {
 
     private final DeceptionMissions plugin;
 
-    // Map to keep track of pending targets for BountyListener
+    // Shared map to track pending bounty target selections / confirmations for BountyListener
     public static final Map<UUID, UUID> pendingBountyTargets = new HashMap<>();
 
     public BountyCommand(DeceptionMissions plugin) {
@@ -43,7 +43,7 @@ public class BountyCommand implements CommandExecutor {
                 return true;
             }
 
-            // Verify if player has an active bounty contract/kill on the target
+            // Verify if player has an active bounty contract on the target
             UUID trackedTarget = pendingBountyTargets.get(player.getUniqueId());
             if (trackedTarget != null && trackedTarget.equals(targetPlayer.getUniqueId())) {
                 pendingBountyTargets.remove(player.getUniqueId());
@@ -53,7 +53,7 @@ public class BountyCommand implements CommandExecutor {
                         .append(Component.text(targetPlayer.getName(), NamedTextColor.WHITE)));
                 player.sendMessage(Component.text(" • Contract Status: ", NamedTextColor.GRAY)
                         .append(Component.text("SUCCESSFUL", NamedTextColor.GREEN, TextDecoration.BOLD)));
-                player.sendMessage(Component.text(" • Rewards delivered to your inventory!", NamedTextColor.YELLOW));
+                player.sendMessage(Component.text(" • Rewards: Diamonds, Golden Apples, Custom Buffs & Heart Chance!", NamedTextColor.YELLOW));
                 player.sendMessage(Component.text("========================================", NamedTextColor.GOLD));
             } else {
                 player.sendMessage(Component.text("[Bounty] You do not have an active claimable bounty contract for " + targetPlayer.getName() + "!", NamedTextColor.RED));
@@ -102,7 +102,7 @@ public class BountyCommand implements CommandExecutor {
             player.sendMessage(Component.text(" BOUNTY TARGET SELECTED: ", NamedTextColor.YELLOW, TextDecoration.BOLD)
                     .append(Component.text(targetPlayer.getName(), NamedTextColor.WHITE)));
             player.sendMessage(Component.text(" • Status: ", NamedTextColor.GRAY)
-                    .append(Component.text("Ready to initialize contract.", NamedTextColor.GREEN)));
+                    .append(Component.text("Contract Active - Rewards ready upon kill.", NamedTextColor.GREEN)));
             player.sendMessage(Component.text("========================================", NamedTextColor.GOLD));
 
             return true;
