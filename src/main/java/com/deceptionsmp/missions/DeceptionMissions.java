@@ -73,7 +73,7 @@ public class DeceptionMissions extends JavaPlugin implements CommandExecutor {
             player.sendMessage(Component.text("Difficulty: ", NamedTextColor.GOLD).append(Component.text(m.getDifficulty().name(), NamedTextColor.WHITE)));
             player.sendMessage(Component.text("Objective: ", NamedTextColor.YELLOW).append(Component.text(m.getDescription(), NamedTextColor.WHITE)));
             player.sendMessage(Component.text("Progress: ", NamedTextColor.GREEN).append(Component.text(m.getProgress() + "/" + m.getRequiredAmount(), NamedTextColor.WHITE)));
-            player.sendMessage(Component.text("Reward: ", NamedTextColor.AQUA).append(Component.text("+" + m.getDifficulty().getXpReward() + " XP", NamedTextColor.WHITE)));
+            player.sendMessage(Component.text("Reward: ", NamedTextColor.AQUA).append(Component.text("Materials, Buffs & Heart Chance", NamedTextColor.WHITE)));
             long remainingMillis = m.getDeadlineTimestamp() - System.currentTimeMillis();
             long minutesLeft = Math.max(0, remainingMillis / 60000);
             player.sendMessage(Component.text("Time Left: ", NamedTextColor.RED).append(Component.text(minutesLeft + " minutes", NamedTextColor.WHITE)));
