@@ -26,28 +26,32 @@ public class MissionCommand implements CommandExecutor {
             return true;
         }
 
-        Mission mission = plugin.getMissionManager().getActiveMission(player.getUniqueId());
-        if (mission == null) {
-            player.sendMessage(Component.text("[Missions] You do not have an active mission right now!", NamedTextColor.RED));
-            return true;
+        Mission active = plugin.getMissionManager().getActiveMission(player.getUniqueId());
+
+        player.sendMessage(Component.text("========================================", NamedTextColor.DARK_RED));
+        player.sendMessage(Component.text(" SECRET MISSION STATUS ", NamedTextColor.RED, TextDecoration.BOLD));
+
+        if (active == null) {
+            player.sendMessage(Component.text(" • You currently have no active secret mission.", NamedTextColor.GRAY));
+            player.sendMessage(Component.text(" • Re-join or wait for the system to assign one.", NamedTextColor.DARK_GRAY));
+        } else {
+            long remainingSec = Math.max(0, (active.getDeadlineTimestamp() - System.currentTimeMillis()) / 1000);
+            long minutes = remainingSec / 60;
+            long seconds = remainingSec % 60;
+
+            player.sendMessage(Component.text(" • Objective: ", NamedTextColor.GRAY)
+                    .append(Component.text(active.getDescription(), NamedTextColor.GOLD, TextDecoration.BOLD)));
+            player.sendMessage(Component.text(" • Difficulty: ", NamedTextColor.GRAY)
+                    .append(Component.text(active.getDifficulty().name(), NamedTextColor.YELLOW)));
+            player.sendMessage(Component.text(" • Progress: ", NamedTextColor.GRAY)
+                    .append(Component.text(active.getProgress() + " / " + active.getRequiredAmount(), NamedTextColor.AQUA)));
+            player.sendMessage(Component.text(" • Time Remaining: ", NamedTextColor.GRAY)
+                    .append(Component.text(String.format("%dm %ds", minutes, seconds), NamedTextColor.GREEN)));
+            player.sendMessage(Component.text(" • Potential Rewards: ", NamedTextColor.GRAY)
+                    .append(Component.text("Ingots/Diamonds, Potion Buffs & 0.5% Max Heart Chance", NamedTextColor.LIGHT_PURPLE)));
         }
 
-        long timeLeftMs = mission.getDeadlineTimestamp() - System.currentTimeMillis();
-        long minutesLeft = Math.max(0, timeLeftMs / 60000);
-
-        player.sendMessage(Component.text("========================================", NamedTextColor.GOLD));
-        player.sendMessage(Component.text(" ACTIVE MISSION: ", NamedTextColor.YELLOW, TextDecoration.BOLD)
-                .append(Component.text(mission.getDescription(), NamedTextColor.WHITE)));
-        player.sendMessage(Component.text(" • Type: ", NamedTextColor.GRAY)
-                .append(Component.text(mission.getType(), NamedTextColor.AQUA)));
-        player.sendMessage(Component.text(" • Difficulty: ", NamedTextColor.GRAY)
-                .append(Component.text(mission.getDifficulty().name(), NamedTextColor.LIGHT_PURPLE)));
-        player.sendMessage(Component.text(" • Progress: ", NamedTextColor.GRAY)
-                .append(Component.text(mission.getProgress() + " / " + mission.getRequiredAmount(), NamedTextColor.GREEN)));
-        player.sendMessage(Component.text(" • Time Remaining: ", NamedTextColor.GRAY)
-                .append(Component.text(minutesLeft + " minutes", NamedTextColor.GOLD)));
-        player.sendMessage(Component.text("========================================", NamedTextColor.GOLD));
-
+        player.sendMessage(Component.text("========================================", NamedTextColor.DARK_RED));
         return true;
     }
 }
