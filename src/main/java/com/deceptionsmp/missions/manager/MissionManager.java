@@ -6,7 +6,6 @@ import com.deceptionsmp.missions.model.MissionDifficulty;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -17,7 +16,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.time.Duration;
 import java.util.*;
 
 public class MissionManager {
@@ -98,7 +96,10 @@ public class MissionManager {
         );
 
         activeMissions.put(player.getUniqueId(), mission);
-        MissionMessage.sendMissionBox(player, mission);
+        
+        // Notification fallback since MissionMessage was removed
+        player.sendMessage(Component.text("[MISSION] New Mission Assigned: ", NamedTextColor.GOLD)
+                .append(Component.text(mission.getDescription(), NamedTextColor.WHITE)));
     }
 
     public void checkProgress(Player player, String missionTypeStr, int amount, String target) {
